@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qcloud.weapp.session.mapper.CAppInfoMapper">
+  <resultMap id="BaseResultMap" type="com.qcloud.weapp.session.model.CAppInfo">
+    <id column="appid" jdbcType="VARCHAR" property="appid" />
+    <result column="secret" jdbcType="VARCHAR" property="secret" />
+    <result column="login_duration" jdbcType="INTEGER" property="loginDuration" />
+    <result column="session_duration" jdbcType="INTEGER" property="sessionDuration" />
+    <result column="qcloud_appid" jdbcType="VARCHAR" property="qcloudAppid" />
+    <result column="ip" jdbcType="VARCHAR" property="ip" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    appid, secret, login_duration, session_duration, qcloud_appid, ip
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from cAppinfo
+    where appid = #{appid,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from cAppinfo
+    where appid = #{appid,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.qcloud.weapp.session.model.CAppInfo">
+    <selectKey keyProperty="appid" order="AFTER" resultType="java.lang.String">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into cAppinfo (secret, login_duration, session_duration, 
+      qcloud_appid, ip)
+    values (#{secret,jdbcType=VARCHAR}, #{loginDuration,jdbcType=INTEGER}, #{sessionDuration,jdbcType=INTEGER}, 
+      #{qcloudAppid,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.qcloud.weapp.session.model.CAppInfo">
+    <selectKey keyProperty="appid" order="AFTER" resultType="java.lang.String">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into cAppinfo
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="secret != null">
+        secret,
+      </if>
+      <if test="loginDuration != null">
+        login_duration,
+      </if>
+      <if test="sessionDuration != null">
+        session_duration,
+      </if>
+      <if test="qcloudAppid != null">
+        qcloud_appid,
+      </if>
+      <if test="ip != null">
+        ip,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="secret != null">
+        #{secret,jdbcType=VARCHAR},
+      </if>
+      <if test="loginDuration != null">
+        #{loginDuration,jdbcType=INTEGER},
+      </if>
+      <if test="sessionDuration != null">
+        #{sessionDuration,jdbcType=INTEGER},
+      </if>
+      <if test="qcloudAppid != null">
+        #{qcloudAppid,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null">
+        #{ip,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qcloud.weapp.session.model.CAppInfo">
+    update cAppinfo
+    <set>
+      <if test="secret != null">
+        secret = #{secret,jdbcType=VARCHAR},
+      </if>
+      <if test="loginDuration != null">
+        login_duration = #{loginDuration,jdbcType=INTEGER},
+      </if>
+      <if test="sessionDuration != null">
+        session_duration = #{sessionDuration,jdbcType=INTEGER},
+      </if>
+      <if test="qcloudAppid != null">
+        qcloud_appid = #{qcloudAppid,jdbcType=VARCHAR},
+      </if>
+      <if test="ip != null">
+        ip = #{ip,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where appid = #{appid,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qcloud.weapp.session.model.CAppInfo">
+    update cAppinfo
+    set secret = #{secret,jdbcType=VARCHAR},
+      login_duration = #{loginDuration,jdbcType=INTEGER},
+      session_duration = #{sessionDuration,jdbcType=INTEGER},
+      qcloud_appid = #{qcloudAppid,jdbcType=VARCHAR},
+      ip = #{ip,jdbcType=VARCHAR}
+    where appid = #{appid,jdbcType=VARCHAR}
+  </update>
+</mapper>
