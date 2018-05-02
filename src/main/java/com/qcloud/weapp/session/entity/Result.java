@@ -64,11 +64,16 @@ public class Result {
     public Result(Integer returnCode, String returnMessage) {
         this.returnCode = returnCode;
         this.returnMessage = returnMessage;
+        this.returnData = "";
+        this.version = 1;
+        this.componentName = "MA";
     }
 
     public Result(Integer returnCode, String returnMessage, Object returnData) {
         this.returnCode = returnCode;
         this.returnMessage = returnMessage;
         this.returnData = returnData;
+        this.version = 1;
+        this.componentName = "MA";
     }
 }

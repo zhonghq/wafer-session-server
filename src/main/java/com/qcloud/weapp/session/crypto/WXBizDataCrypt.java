@@ -8,6 +8,8 @@ import sun.misc.BASE64Decoder;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 /**
  * 微信小程序
@@ -47,7 +49,8 @@ public class WXBizDataCrypt {
              * 2.对称解密秘钥 aeskey = Base64_Decode(session_key), aeskey 是16字节。
              * 3.对称解密算法初始向量 为Base64_Decode(iv)，其中iv由数据接口返回。
              */
-            byte[] encryptedByte = base64Decoder.decodeBuffer(encryptedData);
+            InputStream inputStream = new ByteArrayInputStream(encryptedData.getBytes("utf8"));
+            byte[] encryptedByte = base64Decoder.decodeBuffer(inputStream);
             byte[] sessionKeyByte = base64Decoder.decodeBuffer(this.sessionKey);
             byte[] ivByte = base64Decoder.decodeBuffer(iv);
             /**

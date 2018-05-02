@@ -34,7 +34,8 @@
 
     <!--扫描mapper-->
     <mappers>
-        <package name="com.qcloud.weapp.session.mapper"/>
+        <mapper resource="mapper/CAppInfoMapper.xml" />
+        <mapper resource="mapper/CSessionInfoMapper.xml" />
     </mappers>
 
 

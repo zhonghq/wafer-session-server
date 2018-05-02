@@ -5,7 +5,7 @@
 
     <groupId>com.qcloud.weapp</groupId>
     <artifactId>session</artifactId>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
     <version>0.0.1-SNAPSHOT</version>
     <dependencies>
         <dependency>
@@ -13,10 +13,12 @@
             <artifactId>mybatis</artifactId>
             <version>3.4.5</version>
         </dependency>
+        <!--log4j日志支持-->
+        <!-- 日志文件管理包 -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

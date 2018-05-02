@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.qcloud.weapp.session.mapper.CSessionInfoMapper">
+<mapper namespace="CSessionInfoMapper">
   <resultMap id="BaseResultMap" type="com.qcloud.weapp.session.model.CSessionInfo">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="uuid" jdbcType="VARCHAR" property="uuid" />

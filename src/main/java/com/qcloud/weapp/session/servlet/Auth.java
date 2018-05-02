@@ -36,65 +36,63 @@ public class Auth {
      */
     public Result getIdSkey(String code,String encryptData,String iv){
         SqlSession sqlSession = GetSqlSession.getSqlSession();
-        List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
-        if (null != appInfoList && appInfoList.size() == 1){
-            CAppInfo appInfo = appInfoList.get(0);
-            String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +appInfo.getAppid()+ "&secret=" +appInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
-            JSONObject jsonObject = JSONObject.parseObject(HttpUtil.request(url,"POST",null));
-            if (jsonObject.containsKey("openid") && jsonObject.containsKey("session_key") && jsonObject.containsKey("expires_in")){
-                CSessionInfo sessionInfo = new CSessionInfo();
-                sessionInfo.setUuid(UUIDUtils.getUUID());
-                sessionInfo.setSkey(UUIDUtils.getUUID());
-                sessionInfo.setCreateTime(new Date());
-                sessionInfo.setLastVisitTime(new Date());
-                sessionInfo.setOpenId(jsonObject.getString("openid"));
-                sessionInfo.setSessionKey(jsonObject.getString("session_key"));
-                WXBizDataCrypt bizDataCrypt = new WXBizDataCrypt(appInfo.getAppid(),sessionInfo.getSessionKey());
-                try {
-                    String userInfo = bizDataCrypt.decrypt(encryptData,iv);
-                    BASE64Encoder base64Encoder = new BASE64Encoder();
-                    String userInfoBase64 = base64Encoder.encode(userInfo.getBytes());
-                    sessionInfo.setUserInfo(userInfoBase64);
-                    CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByOpenId",sessionInfo.getOpenId());
-                    int cnt = 0;
-                    if (null != cSessionInfo){
-                        sessionInfo.setUuid(cSessionInfo.getUuid());
-                        cnt = sqlSession.update("CSessionInfoMapper.updateByPrimaryKeySelective",sessionInfo);
-                        if (cnt == 1){
-                            Map<String,Object> returnMap = new HashMap<>();
-                            returnMap.put("id",sessionInfo.getUuid());
-                            returnMap.put("skey",sessionInfo.getSkey());
-                            returnMap.put("user_info",userInfo);
-                            returnMap.put("duration",jsonObject.get("expires_in"));
-                            return new Result(ReturnCode.MA_OK,"UPDATE_SESSION_SUCCESS",returnMap);
-                        }
-                    }else {
-                        cnt = sqlSession.insert("CSessionInfoMapper.insertSelective",sessionInfo);
-                        if (cnt == 1){
-                            Map<String,Object> returnMap = new HashMap<>();
+        try {
+            List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
+            if (null != appInfoList && appInfoList.size() == 1){
+                CAppInfo appInfo = appInfoList.get(0);
+                String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +appInfo.getAppid()+ "&secret=" +appInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
+                JSONObject jsonObject = JSONObject.parseObject(HttpUtil.request(url,"POST",null));
+                if (jsonObject.containsKey("openid") && jsonObject.containsKey("session_key") && jsonObject.containsKey("expires_in")){
+                    CSessionInfo sessionInfo = new CSessionInfo();
+                    sessionInfo.setUuid(UUIDUtils.getUUID());
+                    sessionInfo.setSkey(UUIDUtils.getUUID());
+                    sessionInfo.setCreateTime(new Date());
+                    sessionInfo.setLastVisitTime(new Date());
+                    sessionInfo.setOpenId(jsonObject.getString("openid"));
+                    sessionInfo.setSessionKey(jsonObject.getString("session_key"));
+                    WXBizDataCrypt bizDataCrypt = new WXBizDataCrypt(appInfo.getAppid(),sessionInfo.getSessionKey());
+                    try {
+                        String userInfo = bizDataCrypt.decrypt(encryptData,iv);
+                        BASE64Encoder base64Encoder = new BASE64Encoder();
+                        String userInfoBase64 = base64Encoder.encode(userInfo.getBytes());
+                        sessionInfo.setUserInfo(userInfoBase64);
+                        CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByOpenId",sessionInfo.getOpenId());
+                        if (null == cSessionInfo.getUuid()){
+                            sqlSession.insert("CSessionInfoMapper.insertSelective",sessionInfo);
+                            Map<String,Object> returnMap = new HashMap<String, Object>();
                             returnMap.put("id",sessionInfo.getUuid());
                             returnMap.put("skey",sessionInfo.getSkey());
                             returnMap.put("user_info",userInfo);
                             returnMap.put("duration",jsonObject.get("expires_in"));
                             return new Result(ReturnCode.MA_OK,"NEW_SESSION_SUCCESS",returnMap);
+                        }else {
+                            sessionInfo.setUuid(cSessionInfo.getUuid());
+                            sqlSession.update("CSessionInfoMapper.updateByPrimaryKeySelective",sessionInfo);
+                            JSONObject dataJsonObject = new JSONObject();
+                            dataJsonObject.put("id",sessionInfo.getUuid());
+                            dataJsonObject.put("skey",sessionInfo.getSkey());
+                            dataJsonObject.put("user_info", JSONObject.parseObject(userInfo));
+                            dataJsonObject.put("duration",jsonObject.get("expires_in"));
+                            return new Result(ReturnCode.MA_OK,"UPDATE_SESSION_SUCCESS",dataJsonObject);
                         }
-                    }
-                    if (cnt == 0){
-                        return new Result(ReturnCode.MA_CHANGE_SESSION_ERR,"CHANGE_SESSION_ERR");
-                    }
-                    
-                } catch (Exception e) {
-                    return new Result(ReturnCode.MA_DECRYPT_ERR,"DECRYPT_FAIL");
-                }
 
-            }else if (jsonObject.containsKey("errcode") && jsonObject.containsKey("errmsg")){
-                return new Result(ReturnCode.MA_WEIXIN_CODE_ERR,"WEIXIN_CODE_ERR");
+                    } catch (Exception e) {
+                        return new Result(ReturnCode.MA_DECRYPT_ERR,"DECRYPT_FAIL");
+                    }
+
+                }else if (jsonObject.containsKey("errcode") && jsonObject.containsKey("errmsg")){
+                    return new Result(ReturnCode.MA_WEIXIN_CODE_ERR,"WEIXIN_CODE_ERR");
+                }else {
+                    return new Result(ReturnCode.MA_WEIXIN_RETURN_ERR,"WEIXIN_RETURN_ERR");
+                }
             }else {
-                return new Result(ReturnCode.MA_WEIXIN_RETURN_ERR,"WEIXIN_RETURN_ERR");
+                return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
             }
-            return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
-        }else {
-            return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
+        }catch (Exception ex){
+            sqlSession.rollback();
+            return new Result(ReturnCode.MA_NO_APPID,ex.getMessage());
+        }finally {
+            sqlSession.commit();
         }
     }
 
@@ -106,28 +104,41 @@ public class Auth {
      */
     public Result auth(String id, String skey) throws IOException {
         SqlSession sqlSession = GetSqlSession.getSqlSession();
-        List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
-        if (null != appInfoList && appInfoList.size() == 1){
-            CAppInfo cAppInfo = appInfoList.get(0);
-            CSessionInfo param = new CSessionInfo();
-            param.setUuid(id);
-            param.setSkey(skey);
-            CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByAuth",param);
-            Date now = new Date();
-            if (((now.getTime() - cSessionInfo.getCreateTime().getTime())/86400) > cAppInfo.getLoginDuration()){
-                //超时
-                return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
-            }else if ((now.getTime() - cSessionInfo.getLastVisitTime().getTime()) > cAppInfo.getSessionDuration()){
-                //超时
-                return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
+        try {
+            List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
+            if (null != appInfoList && appInfoList.size() == 1){
+                CAppInfo cAppInfo = appInfoList.get(0);
+                CSessionInfo param = new CSessionInfo();
+                param.setUuid(id);
+                param.setSkey(skey);
+                CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByAuth",param);
+                Date now = new Date();
+                if (((now.getTime() - cSessionInfo.getCreateTime().getTime())/86400) > cAppInfo.getLoginDuration()){
+                    //超时
+                    return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
+                }else if ((now.getTime() - cSessionInfo.getLastVisitTime().getTime()) > cAppInfo.getSessionDuration()){
+                    //超时
+                    return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
+                }else {
+                    cSessionInfo.setLastVisitTime(new Date());
+                    sqlSession.update("CSessionInfoMapper.updateByPrimaryKey",cSessionInfo);
+                    BASE64Decoder base64Decoder = new BASE64Decoder();
+                    String userInfo = base64Decoder.decodeBuffer(cSessionInfo.getUserInfo()).toString();
+                    JSONObject dataJsonObject = new JSONObject();
+                    dataJsonObject.put("user_info", JSONObject.parseObject(userInfo));
+                    return new Result(ReturnCode.MA_OK,"AUTH_SUCCESS",dataJsonObject);
+                }
             }else {
-                BASE64Decoder base64Decoder = new BASE64Decoder();
-                Map<String,Object> returnMap = new HashMap<>();
-                returnMap.put("user_info",base64Decoder.decodeBuffer(cSessionInfo.getUserInfo()).toString());
-                return new Result(ReturnCode.MA_OK,"AUTH_SUCCESS",returnMap);
+                return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
             }
-        }else {
-            return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
+        }catch (Exception ex){
+            return new Result(ReturnCode.MA_NO_APPID,ex.getMessage());
+        }finally {
+            sqlSession.commit();
         }
     }
+
+
+
+
 }
