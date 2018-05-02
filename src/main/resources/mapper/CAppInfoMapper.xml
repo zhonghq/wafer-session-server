@@ -18,6 +18,11 @@
     from cAppinfo
     where appid = #{appid,jdbcType=VARCHAR}
   </select>
+  <select id="selectAll"  resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from cAppinfo
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
     delete from cAppinfo
     where appid = #{appid,jdbcType=VARCHAR}

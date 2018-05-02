@@ -1,7 +1,8 @@
 package com.qcloud.weapp.session.crypto;
 
 
-import org.json.JSONObject;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import sun.misc.BASE64Decoder;
 
 import javax.crypto.Cipher;
@@ -35,7 +36,7 @@ public class WXBizDataCrypt {
      * @param
      * @throws Exception
      */
-    public JSONObject decrypt(String encryptedData, String iv) throws Exception {
+    public String decrypt(String encryptedData, String iv) throws Exception {
         String jsonStr = new String("");
         try {
             BASE64Decoder base64Decoder = new BASE64Decoder();
@@ -61,10 +62,10 @@ public class WXBizDataCrypt {
         } catch (Exception ex) {
             throw new Exception("Illegal Buffer");
         }
-        JSONObject jsonObject = new JSONObject(jsonStr);
+        JSONObject jsonObject = JSON.parseObject(jsonStr);
         if (!jsonObject.getJSONObject("watermark").get("appid").toString().equals(this.appId)){
             throw new Exception("Illegal Buffer");
         }
-        return jsonObject;
+        return jsonObject.toString();
     }
 }

@@ -18,11 +18,30 @@
     select 
     <include refid="Base_Column_List" />
     from cSessionInfo
-    where id = #{id,jdbcType=INTEGER}
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </select>
+  <select id="selectBySKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+  select
+  <include refid="Base_Column_List" />
+  from cSessionInfo
+  where skey = #{skey,jdbcType=VARCHAR}
+</select>
+  <select id="selectByAuth" parameterType="com.qcloud.weapp.session.model.CSessionInfo" resultMap="BaseResultMap">
+  select
+  <include refid="Base_Column_List" />
+  from cSessionInfo
+  where skey = #{skey,jdbcType=VARCHAR}
+    and uuid = #{uuid,jdbcType=VARCHAR}
+</select>
+  <select id="selectByOpenId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from cSessionInfo
+    where open_id = #{openId,jdbcType=VARCHAR}
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from cSessionInfo
-    where id = #{id,jdbcType=INTEGER}
+    where uuid = #{uuid,jdbcType=VARCHAR}
   </delete>
   <insert id="insert" parameterType="com.qcloud.weapp.session.model.CSessionInfo">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
@@ -90,9 +109,6 @@
   <update id="updateByPrimaryKeySelective" parameterType="com.qcloud.weapp.session.model.CSessionInfo">
     update cSessionInfo
     <set>
-      <if test="uuid != null">
-        uuid = #{uuid,jdbcType=VARCHAR},
-      </if>
       <if test="skey != null">
         skey = #{skey,jdbcType=VARCHAR},
       </if>
@@ -112,17 +128,16 @@
         user_info = #{userInfo,jdbcType=VARCHAR},
       </if>
     </set>
-    where id = #{id,jdbcType=INTEGER}
+    where uuid = #{uuid,jdbcType=VARCHAR}
   </update>
   <update id="updateByPrimaryKey" parameterType="com.qcloud.weapp.session.model.CSessionInfo">
     update cSessionInfo
-    set uuid = #{uuid,jdbcType=VARCHAR},
-      skey = #{skey,jdbcType=VARCHAR},
+    set skey = #{skey,jdbcType=VARCHAR},
       create_time = #{createTime,jdbcType=TIMESTAMP},
       last_visit_time = #{lastVisitTime,jdbcType=TIMESTAMP},
       open_id = #{openId,jdbcType=VARCHAR},
       session_key = #{sessionKey,jdbcType=VARCHAR},
       user_info = #{userInfo,jdbcType=VARCHAR}
-    where id = #{id,jdbcType=INTEGER}
+    where uuid = #{uuid,jdbcType=VARCHAR}
   </update>
 </mapper>
