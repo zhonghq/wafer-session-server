@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="CAppInfoMapper">
+<mapper namespace="com.qcloud.weapp.session.mapper.CAppInfoMapper">
   <resultMap id="BaseResultMap" type="com.qcloud.weapp.session.model.CAppInfo">
     <id column="appid" jdbcType="VARCHAR" property="appid" />
     <result column="secret" jdbcType="VARCHAR" property="secret" />

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="true">
+    <property name="projectName" value="amiaoagou"/>
+    <contextName>${projectName}</contextName>
+
+    <springProperty scope="context" name="logPath" source="log.path"/>
+
+    <!-- 文件输出格式 -->
+    <property name="PATTERN" value="%-12(%d{yyyy-MM-dd HH:mm:ss.SSS}) |-%-5level [%thread] %c [%L] -| %msg%n" />
+
+    <!-- 开发环境 -->
+    <springProfile name="default">
+        <!-- 输出到控制台 -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender" level="INFO">
+            <encoder charset="UTF-8">
+                <pattern>${PATTERN}</pattern>
+            </encoder>
+        </appender>
+
+        <logger name="java.sql.Statement" level="DEBUG" />
+        <logger name="java.sql.ResultSet" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </springProfile>
+
+    
+</configuration>

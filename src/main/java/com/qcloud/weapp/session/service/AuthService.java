@@ -1,14 +1,18 @@
-package com.qcloud.weapp.session.servlet;
+package com.qcloud.weapp.session.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.qcloud.weapp.session.crypto.WXBizDataCrypt;
 import com.qcloud.weapp.session.entity.Result;
-import com.qcloud.weapp.session.factory.GetSqlSession;
+import com.qcloud.weapp.session.mapper.CAppInfoMapper;
+import com.qcloud.weapp.session.mapper.CSessionInfoMapper;
 import com.qcloud.weapp.session.model.CAppInfo;
 import com.qcloud.weapp.session.model.CSessionInfo;
+import com.qcloud.weapp.session.utils.HttpUtil;
 import com.qcloud.weapp.session.utils.ReturnCode;
 import com.qcloud.weapp.session.utils.UUIDUtils;
-import org.apache.ibatis.session.SqlSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
@@ -19,22 +23,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
- * @author zhong
- * @date 2018/4/28
+ * Created by zhong on 2018/5/3.
  */
-public class Auth {
+@Service
+public class AuthService {
 
+    @Autowired
+    CAppInfoMapper cAppInfoMapper;
+    @Autowired
+    CSessionInfoMapper cSessionInfoMapper;
 
     /**
      * 废除getUserInfo直接调用后的
      * @param code
      * @return
      */
+    @Transactional
     public Result getIdSkey(String code) {
-        SqlSession sqlSession = GetSqlSession.getSqlSession();
         try {
-            List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
+            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
             if (null != appInfoList && appInfoList.size() == 1){
                 CAppInfo appInfo = appInfoList.get(0);
                 String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +appInfo.getAppid()+ "&secret=" +appInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
@@ -48,7 +55,7 @@ public class Auth {
                     sessionInfo.setOpenId(jsonObject.getString("openid"));
                     sessionInfo.setSessionKey(jsonObject.getString("session_key"));
                     try {
-                        CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByOpenId",sessionInfo.getOpenId());
+                        CSessionInfo cSessionInfo = cSessionInfoMapper.selectByOpenId(sessionInfo.getOpenId());
                         JSONObject userInfo = new JSONObject();
                         userInfo.put("openId",jsonObject.get("openid"));
                         JSONObject waterMark = new JSONObject();
@@ -59,7 +66,7 @@ public class Auth {
                         String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
                         sessionInfo.setUserInfo(userInfoBase64);
                         if (null == cSessionInfo.getUuid()){
-                            sqlSession.insert("CSessionInfoMapper.insertSelective",sessionInfo);
+                            cSessionInfoMapper.insertSelective(sessionInfo);
                             Map<String,Object> returnMap = new HashMap<String, Object>();
                             returnMap.put("id",sessionInfo.getUuid());
                             returnMap.put("skey",sessionInfo.getSkey());
@@ -68,7 +75,7 @@ public class Auth {
                             return new Result(ReturnCode.MA_OK,"NEW_SESSION_SUCCESS",returnMap);
                         }else {
                             sessionInfo.setUuid(cSessionInfo.getUuid());
-                            sqlSession.update("CSessionInfoMapper.updateByPrimaryKeySelective",sessionInfo);
+                            cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
                             JSONObject dataJsonObject = new JSONObject();
                             dataJsonObject.put("id",sessionInfo.getUuid());
                             dataJsonObject.put("skey",sessionInfo.getSkey());
@@ -90,10 +97,7 @@ public class Auth {
                 return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
             }
         }catch (Exception ex){
-            sqlSession.rollback();
             return new Result(ReturnCode.MA_NO_APPID,ex.getMessage());
-        }finally {
-            sqlSession.commit();
         }
     }
 
@@ -104,10 +108,10 @@ public class Auth {
      * @param iv
      * @return
      */
+    @Transactional
     public Result getIdSkey(String code,String encryptData,String iv){
-        SqlSession sqlSession = GetSqlSession.getSqlSession();
         try {
-            List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
+            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
             if (null != appInfoList && appInfoList.size() == 1){
                 CAppInfo appInfo = appInfoList.get(0);
                 String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +appInfo.getAppid()+ "&secret=" +appInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
@@ -126,9 +130,9 @@ public class Auth {
                         BASE64Encoder base64Encoder = new BASE64Encoder();
                         String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
                         sessionInfo.setUserInfo(userInfoBase64);
-                        CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByOpenId",sessionInfo.getOpenId());
+                        CSessionInfo cSessionInfo = cSessionInfoMapper.selectByOpenId(sessionInfo.getOpenId());
                         if (null == cSessionInfo.getUuid()){
-                            sqlSession.insert("CSessionInfoMapper.insertSelective",sessionInfo);
+                            cSessionInfoMapper.insertSelective(sessionInfo);
                             Map<String,Object> returnMap = new HashMap<String, Object>();
                             returnMap.put("id",sessionInfo.getUuid());
                             returnMap.put("skey",sessionInfo.getSkey());
@@ -137,7 +141,7 @@ public class Auth {
                             return new Result(ReturnCode.MA_OK,"NEW_SESSION_SUCCESS",returnMap);
                         }else {
                             sessionInfo.setUuid(cSessionInfo.getUuid());
-                            sqlSession.update("CSessionInfoMapper.updateByPrimaryKeySelective",sessionInfo);
+                            cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
                             JSONObject dataJsonObject = new JSONObject();
                             dataJsonObject.put("id",sessionInfo.getUuid());
                             dataJsonObject.put("skey",sessionInfo.getSkey());
@@ -159,10 +163,7 @@ public class Auth {
                 return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
             }
         }catch (Exception ex){
-            sqlSession.rollback();
             return new Result(ReturnCode.MA_NO_APPID,ex.getMessage());
-        }finally {
-            sqlSession.commit();
         }
     }
 
@@ -174,16 +175,16 @@ public class Auth {
      * @param skey
      * @return
      */
+    @Transactional
     public Result auth(String id, String skey) throws IOException {
-        SqlSession sqlSession = GetSqlSession.getSqlSession();
         try {
-            List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
+            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
             if (null != appInfoList && appInfoList.size() == 1){
                 CAppInfo cAppInfo = appInfoList.get(0);
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
                 param.setSkey(skey);
-                CSessionInfo cSessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByAuth",param);
+                CSessionInfo cSessionInfo = cSessionInfoMapper.selectByAuth(param);
                 Date now = new Date();
                 if (((now.getTime() - cSessionInfo.getCreateTime().getTime())/86400000) > cAppInfo.getLoginDuration()){
                     //超时
@@ -193,7 +194,7 @@ public class Auth {
                     return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
                 }else {
                     cSessionInfo.setLastVisitTime(new Date());
-                    sqlSession.update("CSessionInfoMapper.updateLastVisitTime",cSessionInfo);
+                    cSessionInfoMapper.updateLastVisitTime(cSessionInfo);
                     BASE64Decoder base64Decoder = new BASE64Decoder();
                     String userInfo = new String(base64Decoder.decodeBuffer(cSessionInfo.getUserInfo()),"utf-8");
                     JSONObject dataJsonObject = new JSONObject();
@@ -205,12 +206,10 @@ public class Auth {
             }
         }catch (Exception ex){
             return new Result(ReturnCode.MA_NO_APPID,ex.getMessage());
-        }finally {
-            sqlSession.commit();
         }
     }
 
-     /**
+    /**
      * 新的解密方法
      * @param id
      * @param skey
@@ -218,16 +217,16 @@ public class Auth {
      * @param encryptData
      * @return
      */
+    @Transactional
     public Result decrypt(String id, String skey, String iv, String encryptData) {
-        SqlSession sqlSession = GetSqlSession.getSqlSession();
         try {
-            List<CAppInfo> appInfoList = sqlSession.selectList("CAppInfoMapper.selectAll");
+            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
             if (null != appInfoList && appInfoList.size() == 1){
                 CAppInfo cAppInfo = appInfoList.get(0);
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
                 param.setSkey(skey);
-                CSessionInfo sessionInfo = sqlSession.selectOne("CSessionInfoMapper.selectByAuth",param);
+                CSessionInfo sessionInfo = cSessionInfoMapper.selectByAuth(param);
                 if (null == sessionInfo || null == sessionInfo.getSessionKey()) {
                     return new Result(ReturnCode.MA_DECRYPT_ERR,"GET_SESSION_KEY_SUCCESS_BUT_DECRYPT_FAIL");
                 }
@@ -236,7 +235,7 @@ public class Auth {
                 BASE64Encoder base64Encoder = new BASE64Encoder();
                 String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
                 sessionInfo.setUserInfo(userInfoBase64);
-                sqlSession.update("CSessionInfoMapper.updateByPrimaryKeySelective",sessionInfo);
+                cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
                 JSONObject dataJsonObject = new JSONObject();
                 dataJsonObject.put("user_info",userInfo);
                 return new Result(ReturnCode.MA_OK,"DECRYPT_SUCCESS",dataJsonObject);
@@ -245,9 +244,6 @@ public class Auth {
             }
         }catch (Exception ex){
             return new Result(ReturnCode.MA_NO_APPID,ex.getMessage());
-        }finally {
-            sqlSession.commit();
         }
     }
-
 }

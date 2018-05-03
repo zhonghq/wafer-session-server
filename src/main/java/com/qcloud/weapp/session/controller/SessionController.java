@@ -1,36 +1,39 @@
-package com.qcloud.weapp.session.servlet;
+package com.qcloud.weapp.session.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qcloud.weapp.session.entity.Para;
 import com.qcloud.weapp.session.entity.Result;
+import com.qcloud.weapp.session.service.AuthService;
 import com.qcloud.weapp.session.utils.MethodKey;
 import com.qcloud.weapp.session.utils.RequestUtil;
 import com.qcloud.weapp.session.utils.ReturnCode;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
 
 /**
- * 回话管理器管理服务器入口方法
- * @author zhonghongqiang
- *         Created on 2018-04-28.
+ *
+ * @author zhong
+ * @date 2018/5/3
  */
-@WebServlet("/mina_auth/")
-public class SessionServlet extends HttpServlet {
+@RestController
+public class SessionController {
 
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
-        String jsonStr = RequestUtil.getInputStreamStr(req);
+    @Autowired
+    AuthService authService;
+
+    @RequestMapping(value = "/",method = RequestMethod.POST)
+    public void session(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Result result = new Result();
-        Date start = new Date();
         try {
+            String jsonStr = RequestUtil.getInputStreamStr(request);
             if (StringUtils.isBlank(jsonStr)){
                 result = new Result(ReturnCode.MA_REQUEST_ERR,"REQUEST_IS_NOT_JSON");
             }else {
@@ -46,11 +49,10 @@ public class SessionServlet extends HttpServlet {
                         /**
                          * 处理用户登录请求
                          */
-                        Auth auth = new Auth();
                         if (StringUtils.isNotBlank(para.getCode()) && StringUtils.isNotBlank(para.getEncryptData()) && StringUtils.isNotBlank(para.getIv())){
-                            result = auth.getIdSkey(para.getCode(),para.getEncryptData(),para.getIv());
+                            result = authService.getIdSkey(para.getCode(),para.getEncryptData(),para.getIv());
                         }else if (StringUtils.isNotBlank(para.getCode())){
-                            result = auth.getIdSkey(para.getCode());
+                            result = authService.getIdSkey(para.getCode());
                         }else {
                             result = new Result(ReturnCode.MA_PARA_ERR,"PARA_ERR");
                         }
@@ -59,8 +61,7 @@ public class SessionServlet extends HttpServlet {
                          * 检查用户登陆状态
                          */
                         if (StringUtils.isNotBlank(para.getId()) && StringUtils.isNotBlank(para.getSkey())) {
-                            Auth auth = new Auth();
-                            result =  auth.auth(para.getId(),para.getSkey());
+                            result =  authService.auth(para.getId(),para.getSkey());
                         }else {
                             result = new Result(ReturnCode.MA_PARA_ERR,"PARA_ERR");
                         }
@@ -69,8 +70,7 @@ public class SessionServlet extends HttpServlet {
                          * 小程序敏感数据解密
                          */
                         if (StringUtils.isNotBlank(para.getId()) && StringUtils.isNotBlank(para.getSkey()) && StringUtils.isNotBlank(para.getIv()) && StringUtils.isNotBlank(para.getEncryptData())) {
-                            Auth auth = new Auth();
-                            result =  auth.decrypt(para.getId(),para.getSkey(),para.getIv(),para.getEncryptData());
+                            result =  authService.decrypt(para.getId(),para.getSkey(),para.getIv(),para.getEncryptData());
                         }else {
                             result = new Result(ReturnCode.MA_PARA_ERR,"PARA_ERR");
                         }
@@ -91,12 +91,10 @@ public class SessionServlet extends HttpServlet {
                     }
                 }
             }
+        } catch (Exception e) {
+            result = new Result(ReturnCode.MA_INIT_APPINFO_ERR,e.getMessage());
         } finally {
-            Date end = new Date();
-            System.out.println(end.getTime()-start.getTime());
-            resp.getWriter().write(JSON.toJSONString(result));
+            response.getWriter().write(JSON.toJSONString(result));
         }
-
     }
-
 }
