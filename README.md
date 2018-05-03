@@ -1,7 +1,7 @@
 Wafer 会话服务器
 ===============
 
-##2018.04.25更新后不能直接使用getUserInfo后Wafer回话管理器不能正常登录问题处理，并使用java servlet重新所有功能。
+## 2018.04.25更新后不能直接使用getUserInfo后Wafer回话管理器不能正常登录问题处理，并使用java servlet重写所有功能。
 
 本项目是 [Wafer](https://github.com/tencentyun/wafer) 组成部分，提供会话服务供 SDK 或独立使用。
 
@@ -60,9 +60,9 @@ HTTP 输出为响应内容，下面是响应内容说明：
 * `returnData` - 返回的数据
 
 
-### qcloud.cam.id_skey
+### qcloud.cam.id_skey(1)
 
-`qcloud.cam.id_skey` <font color=#DC143C size=72>处理用户登录,调用wx.login获取code后直接登录</font>
+`qcloud.cam.id_skey` 处理用户登录,调用wx.login获取code后直接登录
 
 使用示例：
 
@@ -103,7 +103,7 @@ Content-Type: application/json;charset=utf-8
 }
 ```
 
-### qcloud.cam.id_skey
+### qcloud.cam.id_skey(2)
 
 `qcloud.cam.id_skey` 处理用户登录请求,需要调用wx.login和wx.getUserInfo一起使用
 
@@ -243,7 +243,7 @@ Content-Type: application/json;charset=utf-8
 }
 ```
 
-响应数据1：调用登录方法时带上用户信息加密数据
+响应数据：调用登录方法时带上用户信息加密数据
 
 ```json
 {
