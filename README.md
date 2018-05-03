@@ -1,6 +1,8 @@
 Wafer 会话服务器
 ===============
 
+##2018.04.25更新后不能直接使用getUserInfo后Wafer回话管理器不能正常登录问题处理，并使用java servlet重新所有功能。
+
 本项目是 [Wafer](https://github.com/tencentyun/wafer) 组成部分，提供会话服务供 SDK 或独立使用。
 
 会话服务的实现细请参考 [Wiki](https://github.com/tencentyun/wafer/wiki/%E4%BC%9A%E8%AF%9D%E6%9C%8D%E5%8A%A1)。
@@ -57,30 +59,217 @@ HTTP 输出为响应内容，下面是响应内容说明：
 * `returnMessage` - 如果返回码非零，内容为出错信息；
 * `returnData` - 返回的数据
 
+
 ### qcloud.cam.id_skey
 
-`qcloud.cam.id_skey` 处理用户登录请求。
+`qcloud.cam.id_skey` <font color=#DC143C size=72>处理用户登录,调用wx.login获取code后直接登录</font>
 
 使用示例：
 
-```sh
-curl -i -d'{"version":1,"componentName":"MA","interface":{"interfaceName":"qcloud.cam.id_skey","para":{"code":"001EWYiD1CVtKg0jXGjD1e6WiD1EWYiC","encrypt_data":"DNlJKYA0mJ3+RDXD/syznaLVLlaF4drGzeZvJFmjnEKtOAi37kAzC/1tCBr7KqGX8EpiLuWl8qt/kcH9a4LxDC5LQvlRLJlDogTEIwtlT/2jBWBuWwBC3vWFhm7Uuq5AOLZV+xG9UmWPKECDZX9UZpWcPRGQpiY8OOUNBAywVniJv6rC2eADFimdRR2qPiebdC3cry7QAvgvttt1Wk56Nb/1TmIbtJRTay5wb+6AY1H7AT1xPoB6XAXW3RqODXtRR0hZT1s/o5y209Vcc6EBal5QdsbJroXa020ZSD62EnlrOwgYnXy5c8SO+bzNAfRw59SVbI4wUNYz6kJb4NDn+y9dlASRjlt8Rau4xTQS+fZSi8HHUwkwE6RRak3qo8YZ7FWWbN2uwUKgQNlc/MfAfLRcfQw4XUqIdn9lxtRblaY="}}}' http://127.0.0.1/mina_auth/
+```http
+POST /mina_auth/ HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+	"interface": {
+		"interfaceName": "qcloud.cam.id_skey",
+		"para": {
+			"code": "001EWYiD1CVtKg0jXGjD1e6WiD1EWYiC"
+		}
+	}
+}
 ```
 
 响应数据：
 
-* `id` - 会话 id
-* `skey` - 会话 skey
-* `userInfo` - 用户信息
+```json
+{
+	"componentName": "MA",
+	"returnCode": 0,
+	"returnData": {
+		"user_info": {
+			"openId":"ocMvos6NjeKLIBqg5Mr9QjxrP1FA",
+			"watermark": {
+				"timestamp": 1477314187,
+				"appid": "wx4f4bc4dec97d474b"
+			}
+		},
+		"id": "68b07d7c847ff005dcff289c47bf6157",
+		"duration": 7200,
+		"skey": "d694b73569e84d6eb3be8fe97fc4fe2b"
+	},
+	"returnMessage": "UPDATE_SESSION_SUCCESS",
+	"version": 1
+}
+```
 
-### qcloud.cam.auth
+### qcloud.cam.id_skey
 
-使用 `qcloud.cam.auth` 接口检查用户登录态。
+`qcloud.cam.id_skey` 处理用户登录请求,需要调用wx.login和wx.getUserInfo一起使用
+
+使用示例：
+
+```http
+POST /mina_auth/ HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+	"interface": {
+		"interfaceName": "qcloud.cam.id_skey",
+		"para": {
+			"code": "001EWYiD1CVtKg0jXGjD1e6WiD1EWYiC",
+			"iv":"r7BXXKkLb8qrSNn05n0qiA==",
+			"encrypt_data": "DNlJKYA0mJ3+RDXD/syznaLVLlaF4drGzeZvJFmjnEKtOAi37kAzC/1tCBr7KqGX8EpiLuWl8qt/kcH9a4LxDC5LQvlRLJlDogTEIwtlT/2jBWBuWwBC3vWFhm7Uuq5AOLZV+xG9UmWPKECDZX9UZpWcPRGQpiY8OOUNBAywVniJv6rC2eADFimdRR2qPiebdC3cry7QAvgvttt1Wk56Nb/1TmIbtJRTay5wb+6AY1H7AT1xPoB6XAXW3RqODXtRR0hZT1s/o5y209Vcc6EBal5QdsbJroXa020ZSD62EnlrOwgYnXy5c8SO+bzNAfRw59SVbI4wUNYz6kJb4NDn+y9dlASRjlt8Rau4xTQS+fZSi8HHUwkwE6RRak3qo8YZ7FWWbN2uwUKgQNlc/MfAfLRcfQw4XUqIdn9lxtRblaY="
+		}
+	}
+}
+```
 
 响应数据：
 
-* `true` - 登录态有效
-* `false` - 登录态无效
+```json
+{
+	"componentName": "MA",
+	"returnCode": 0,
+	"returnData": {
+		"user_info": {
+			"nickName": "Band",
+			"gender": 1,
+			"language": "zh_CN",
+			"city": "Guangzhou",
+			"province": "Guangdong",
+			"country": "CN",
+			"avatarUrl": "http://wx.qlogo.cn/mmopen/vi_32/aSKcBBPpibyKNicHNTMM0qJVh8Kjgiak2AHWr8MHM4WgMEm7GFhsf8OYrySdbvAMvTsw3mo8ibKicsnfN5pRjl1p8HQ/0",
+			"unionId": "ocMvos6NjeKLIBqg5Mr9QjxrP1FA",
+			"openId":"ocMvos6NjeKLIBqg5Mr9QjxrP1FA",
+			"watermark": {
+				"timestamp": 1477314187,
+				"appid": "wx4f4bc4dec97d474b"
+			}
+		},
+		"id": "68b07d7c847ff005dcff289c47bf6157",
+		"duration": 7200,
+		"skey": "d694b73569e84d6eb3be8fe97fc4fe2b"
+	},
+	"returnMessage": "UPDATE_SESSION_SUCCESS",
+	"version": 1
+}
+```
+
+### qcloud.cam.auth
+
+使用 `qcloud.cam.auth` 接口检查用户登录态，获取登录用户信息
+
+```http
+POST /mina_auth/ HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+	"interface":{
+		"interfaceName":"qcloud.cam.auth",
+		"para":{
+			"id":"68b07d7c847ff005dcfd289c47bf6157",
+			"skey":"d694b73569e84d6eb3betfe97fc4fe2b"
+		}
+	}
+}
+```
+
+响应数据1：调用登录方法时带上用户信息加密数据
+
+```json
+{
+    "componentName": "MA",
+    "returnCode": 0,
+    "returnData": {
+        "user_info": {
+            "watermark": {
+                "timestamp": 1525332713,
+                "appid": "wx4f4bc4dec97d474b"
+            },
+            "nickName": "xxx",
+            "avatarUrl": "https://wx.qlogo.cn/mmopen/vi_32/fibd2deticyuzoJIKxbfxVcXics4Ler5ncV2P5PaS8aBpu5Ad92nvoLKW6QRzX1DNfg9UJaolNaN3sJSgUMeUlia2Q/0",
+            "province": "",
+            "gender": 1,
+            "language": "zh_CN",
+            "openId": "onLDr0Nmd4WTaaiDfsgJdkdGDdKQ",
+            "city": "",
+            "country": ""
+        }
+    },
+    "returnMessage": "AUTH_SUCCESS",
+    "version": 1
+}
+```
+
+响应数据2：调用登录方法时没有带上登录用户加密数据
+
+```json
+{
+    "componentName": "MA",
+    "returnCode": 0,
+    "returnData": {
+        "user_info": {
+            "watermark": {
+                "timestamp": 1525332713,
+                "appid": "wx4f4bc4dec97d474b"
+            },
+            "openId": "onLDr0Nmd4WTaaiDfsgJdkdGDdKQ"
+        }
+    },
+    "returnMessage": "AUTH_SUCCESS",
+    "version": 1
+}
+```
+
+### qcloud.cam.decrypt
+
+使用 `qcloud.cam.decrypt` 解密用户信息
+
+```http
+POST /mina_auth/ HTTP/1.1
+Content-Type: application/json;charset=utf-8
+
+{
+	"interface":{
+		"interfaceName":"qcloud.cam.auth",
+		"para":{
+			"id":"68b07d7c847ff005dcfd289c47bf6157",
+			"skey":"d694b73569e84d6eb3betfe97fc4fe2b",
+			"iv":"r7BXXKkLb8qrSNn05n0qiA==",
+            "encrypt_data": "DNlJKYA0mJ3+RDXD/syznaLVLlaF4drGzeZvJFmjnEKtOAi37kAzC/1tCBr7KqGX8EpiLuWl8qt/kcH9a4LxDC5LQvlRLJlDogTEIwtlT/2jBWBuWwBC3vWFhm7Uuq5AOLZV+xG9UmWPKECDZX9UZpWcPRGQpiY8OOUNBAywVniJv6rC2eADFimdRR2qPiebdC3cry7QAvgvttt1Wk56Nb/1TmIbtJRTay5wb+6AY1H7AT1xPoB6XAXW3RqODXtRR0hZT1s/o5y209Vcc6EBal5QdsbJroXa020ZSD62EnlrOwgYnXy5c8SO+bzNAfRw59SVbI4wUNYz6kJb4NDn+y9dlASRjlt8Rau4xTQS+fZSi8HHUwkwE6RRak3qo8YZ7FWWbN2uwUKgQNlc/MfAfLRcfQw4XUqIdn9lxtRblaY="
+		}
+	}
+}
+```
+
+响应数据1：调用登录方法时带上用户信息加密数据
+
+```json
+{
+    "componentName": "MA",
+    "returnCode": 0,
+    "returnData": {
+        "user_info": {
+            "watermark": {
+                "timestamp": 1525332713,
+                "appid": "wx4f4bc4dec97d474b"
+            },
+            "nickName": "xxx",
+            "avatarUrl": "https://wx.qlogo.cn/mmopen/vi_32/fibd2deticyuzoJIKxbfxVcXics4Ler5ncV2P5PaS8aBpu5Ad92nvoLKW6QRzX1DNfg9UJaolNaN3sJSgUMeUlia2Q/0",
+            "province": "",
+            "gender": 1,
+            "language": "zh_CN",
+            "openId": "onLDr0Nmd4WTaaiDfsgJdkdGDdKQ",
+            "city": "",
+            "country": ""
+        }
+    },
+    "returnMessage": "DECRYPT_SUCCESS",
+    "version": 1
+}
+```
+
 
 ### 错误码
 <table>

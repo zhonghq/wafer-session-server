@@ -8,8 +8,6 @@ import sun.misc.BASE64Decoder;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 
 /**
  * 微信小程序
@@ -38,8 +36,8 @@ public class WXBizDataCrypt {
      * @param
      * @throws Exception
      */
-    public String decrypt(String encryptedData, String iv) throws Exception {
-        String jsonStr = new String("");
+    public JSONObject decrypt(String encryptedData, String iv) throws Exception {
+        String jsonStr;
         try {
             BASE64Decoder base64Decoder = new BASE64Decoder();
             /**
@@ -49,8 +47,7 @@ public class WXBizDataCrypt {
              * 2.对称解密秘钥 aeskey = Base64_Decode(session_key), aeskey 是16字节。
              * 3.对称解密算法初始向量 为Base64_Decode(iv)，其中iv由数据接口返回。
              */
-            InputStream inputStream = new ByteArrayInputStream(encryptedData.getBytes("utf8"));
-            byte[] encryptedByte = base64Decoder.decodeBuffer(inputStream);
+            byte[] encryptedByte = base64Decoder.decodeBuffer(encryptedData);
             byte[] sessionKeyByte = base64Decoder.decodeBuffer(this.sessionKey);
             byte[] ivByte = base64Decoder.decodeBuffer(iv);
             /**
@@ -61,7 +58,7 @@ public class WXBizDataCrypt {
             IvParameterSpec ivParameterSpec = new IvParameterSpec(ivByte);
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivParameterSpec);
             byte[] original = cipher.doFinal(encryptedByte);
-            jsonStr = new String(original);
+            jsonStr = new String(original,"utf-8");
         } catch (Exception ex) {
             throw new Exception("Illegal Buffer");
         }
@@ -69,6 +66,6 @@ public class WXBizDataCrypt {
         if (!jsonObject.getJSONObject("watermark").get("appid").toString().equals(this.appId)){
             throw new Exception("Illegal Buffer");
         }
-        return jsonObject.toString();
+        return jsonObject;
     }
 }

@@ -61,6 +61,13 @@ public interface CSessionInfoMapper {
     int updateByPrimaryKeySelective(CSessionInfo record);
 
     /**
+     * 通过uuid更新LastVisitTime
+     * @param record
+     * @return
+     */
+    int updateLastVisitTime(CSessionInfo record);
+
+    /**
      * 通过uuid更新Session
      * @param record
      * @return

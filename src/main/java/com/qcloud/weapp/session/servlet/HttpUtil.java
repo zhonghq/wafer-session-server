@@ -1,7 +1,6 @@
 package com.qcloud.weapp.session.servlet;
 
 import com.qcloud.weapp.session.utils.MyX509TrustManager;
-import com.sun.deploy.net.HttpResponse;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;

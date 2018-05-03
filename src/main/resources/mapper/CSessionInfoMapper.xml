@@ -140,4 +140,10 @@
       user_info = #{userInfo,jdbcType=VARCHAR}
     where uuid = #{uuid,jdbcType=VARCHAR}
   </update>
+  <!--更新最后访问时间-->
+  <update id="updateLastVisitTime" parameterType="com.qcloud.weapp.session.model.CSessionInfo">
+    update cSessionInfo
+    set last_visit_time = #{lastVisitTime,jdbcType=TIMESTAMP}
+    where uuid = #{uuid,jdbcType=VARCHAR}
+  </update>
 </mapper>

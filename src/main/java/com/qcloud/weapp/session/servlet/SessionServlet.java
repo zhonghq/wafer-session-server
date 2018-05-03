@@ -4,34 +4,32 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qcloud.weapp.session.entity.Para;
 import com.qcloud.weapp.session.entity.Result;
-import com.qcloud.weapp.session.factory.GetSqlSession;
-import com.qcloud.weapp.session.utils.Consants;
 import com.qcloud.weapp.session.utils.MethodKey;
 import com.qcloud.weapp.session.utils.RequestUtil;
 import com.qcloud.weapp.session.utils.ReturnCode;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
 
-import javax.naming.AuthenticationNotSupportedException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * 回话管理器管理服务器入口方法
  * @author zhonghongqiang
  *         Created on 2018-04-28.
  */
-@WebServlet("/hello")
+@WebServlet("/mina_auth/")
 public class SessionServlet extends HttpServlet {
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
         String jsonStr = RequestUtil.getInputStreamStr(req);
         Result result = new Result();
+        Date start = new Date();
         try {
             if (StringUtils.isBlank(jsonStr)){
                 result = new Result(ReturnCode.MA_REQUEST_ERR,"REQUEST_IS_NOT_JSON");
@@ -48,13 +46,11 @@ public class SessionServlet extends HttpServlet {
                         /**
                          * 处理用户登录请求
                          */
-                        if (StringUtils.isNotBlank(para.getCode()) && StringUtils.isNotBlank(para.getEncryptData())){
-                            Auth auth = new Auth();
-                            if (StringUtils.isBlank(para.getIv())) {
-                                result =  auth.getIdSkey(para.getCode(),para.getEncryptData(),"old");
-                            }else {
-                                result = auth.getIdSkey(para.getCode(),para.getEncryptData(),para.getIv());
-                            }
+                        Auth auth = new Auth();
+                        if (StringUtils.isNotBlank(para.getCode()) && StringUtils.isNotBlank(para.getEncryptData()) && StringUtils.isNotBlank(para.getIv())){
+                            result = auth.getIdSkey(para.getCode(),para.getEncryptData(),para.getIv());
+                        }else if (StringUtils.isNotBlank(para.getCode())){
+                            result = auth.getIdSkey(para.getCode());
                         }else {
                             result = new Result(ReturnCode.MA_PARA_ERR,"PARA_ERR");
                         }
@@ -72,8 +68,9 @@ public class SessionServlet extends HttpServlet {
                         /**
                          * 小程序敏感数据解密
                          */
-                        if (StringUtils.isNotBlank(para.getId()) && StringUtils.isNotBlank(para.getSkey()) && StringUtils.isNotBlank(para.getEncryptData())) {
-
+                        if (StringUtils.isNotBlank(para.getId()) && StringUtils.isNotBlank(para.getSkey()) && StringUtils.isNotBlank(para.getIv()) && StringUtils.isNotBlank(para.getEncryptData())) {
+                            Auth auth = new Auth();
+                            result =  auth.decrypt(para.getId(),para.getSkey(),para.getIv(),para.getEncryptData());
                         }else {
                             result = new Result(ReturnCode.MA_PARA_ERR,"PARA_ERR");
                         }
@@ -95,6 +92,8 @@ public class SessionServlet extends HttpServlet {
                 }
             }
         } finally {
+            Date end = new Date();
+            System.out.println(end.getTime()-start.getTime());
             resp.getWriter().write(JSON.toJSONString(result));
         }
 
