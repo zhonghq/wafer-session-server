@@ -29,7 +29,7 @@ public class SessionController {
     @Autowired
     AuthService authService;
 
-    @RequestMapping(value = "/",method = RequestMethod.POST)
+    @RequestMapping(value = "/mina_auth",method = RequestMethod.POST)
     public void session(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Result result = new Result();
         try {

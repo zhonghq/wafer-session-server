@@ -38,7 +38,6 @@ public class AuthService {
      * @param code
      * @return
      */
-    @Transactional
     public Result getIdSkey(String code) {
         try {
             List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
@@ -108,7 +107,6 @@ public class AuthService {
      * @param iv
      * @return
      */
-    @Transactional
     public Result getIdSkey(String code,String encryptData,String iv){
         try {
             List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
@@ -175,7 +173,6 @@ public class AuthService {
      * @param skey
      * @return
      */
-    @Transactional
     public Result auth(String id, String skey) throws IOException {
         try {
             List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
@@ -217,7 +214,6 @@ public class AuthService {
      * @param encryptData
      * @return
      */
-    @Transactional
     public Result decrypt(String id, String skey, String iv, String encryptData) {
         try {
             List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
