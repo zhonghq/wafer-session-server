@@ -12,7 +12,7 @@
   <sql id="Base_Column_List">
     appid, secret, login_duration, session_duration, qcloud_appid, ip
   </sql>
-  <select id="selectOne" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="selectOne" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
     from cAppinfo
