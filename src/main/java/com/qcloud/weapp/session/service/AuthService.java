@@ -40,10 +40,9 @@ public class AuthService {
      */
     public Result getIdSkey(String code) {
         try {
-            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
-            if (null != appInfoList && appInfoList.size() == 1){
-                CAppInfo appInfo = appInfoList.get(0);
-                String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +appInfo.getAppid()+ "&secret=" +appInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
+            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            if (null != cAppInfo){
+                String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +cAppInfo.getAppid()+ "&secret=" +cAppInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
                 JSONObject jsonObject = JSONObject.parseObject(HttpUtil.request(url,"POST",null));
                 if (jsonObject.containsKey("openid") && jsonObject.containsKey("session_key") && jsonObject.containsKey("expires_in")){
                     CSessionInfo sessionInfo = new CSessionInfo();
@@ -59,7 +58,7 @@ public class AuthService {
                         userInfo.put("openId",jsonObject.get("openid"));
                         JSONObject waterMark = new JSONObject();
                         waterMark.put("timestamp",(new Date()).getTime()/1000);
-                        waterMark.put("appid",appInfo.getAppid());
+                        waterMark.put("appid",cAppInfo.getAppid());
                         userInfo.put("watermark",waterMark);
                         BASE64Encoder base64Encoder = new BASE64Encoder();
                         String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
@@ -109,10 +108,9 @@ public class AuthService {
      */
     public Result getIdSkey(String code,String encryptData,String iv){
         try {
-            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
-            if (null != appInfoList && appInfoList.size() == 1){
-                CAppInfo appInfo = appInfoList.get(0);
-                String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +appInfo.getAppid()+ "&secret=" +appInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
+            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            if (null != cAppInfo){
+                String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +cAppInfo.getAppid()+ "&secret=" +cAppInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
                 JSONObject jsonObject = JSONObject.parseObject(HttpUtil.request(url,"POST",null));
                 if (jsonObject.containsKey("openid") && jsonObject.containsKey("session_key") && jsonObject.containsKey("expires_in")){
                     CSessionInfo sessionInfo = new CSessionInfo();
@@ -122,7 +120,7 @@ public class AuthService {
                     sessionInfo.setLastVisitTime(new Date());
                     sessionInfo.setOpenId(jsonObject.getString("openid"));
                     sessionInfo.setSessionKey(jsonObject.getString("session_key"));
-                    WXBizDataCrypt bizDataCrypt = new WXBizDataCrypt(appInfo.getAppid(),sessionInfo.getSessionKey());
+                    WXBizDataCrypt bizDataCrypt = new WXBizDataCrypt(cAppInfo.getAppid(),sessionInfo.getSessionKey());
                     try {
                         JSONObject userInfo = bizDataCrypt.decrypt(encryptData,iv);
                         BASE64Encoder base64Encoder = new BASE64Encoder();
@@ -175,9 +173,8 @@ public class AuthService {
      */
     public Result auth(String id, String skey) throws IOException {
         try {
-            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
-            if (null != appInfoList && appInfoList.size() == 1){
-                CAppInfo cAppInfo = appInfoList.get(0);
+            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            if (null != cAppInfo){
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
                 param.setSkey(skey);
@@ -216,9 +213,8 @@ public class AuthService {
      */
     public Result decrypt(String id, String skey, String iv, String encryptData) {
         try {
-            List<CAppInfo> appInfoList = cAppInfoMapper.selectAll();
-            if (null != appInfoList && appInfoList.size() == 1){
-                CAppInfo cAppInfo = appInfoList.get(0);
+            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            if (null != cAppInfo){
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
                 param.setSkey(skey);

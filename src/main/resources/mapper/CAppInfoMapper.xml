@@ -12,11 +12,11 @@
   <sql id="Base_Column_List">
     appid, secret, login_duration, session_duration, qcloud_appid, ip
   </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+  <select id="selectOne" parameterType="java.lang.String" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
     from cAppinfo
-    where appid = #{appid,jdbcType=VARCHAR}
+    limit 1,1
   </select>
   <select id="selectAll"  resultMap="BaseResultMap">
     select
