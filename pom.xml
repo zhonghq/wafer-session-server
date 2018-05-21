@@ -5,8 +5,9 @@
 
     <groupId>com.qcloud.weapp</groupId>
     <artifactId>session</artifactId>
-    <packaging>jar</packaging>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -60,6 +61,10 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.mybatis.generator</groupId>
                 <artifactId>mybatis-generator-maven-plugin</artifactId>

@@ -1,5 +1,6 @@
 package com.qcloud.weapp.session.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.qcloud.weapp.session.crypto.WXBizDataCrypt;
 import com.qcloud.weapp.session.entity.Result;
@@ -54,7 +55,11 @@ public class AuthService {
                     sessionInfo.setSessionKey(jsonObject.getString("session_key"));
                     try {
                         CSessionInfo cSessionInfo = cSessionInfoMapper.selectByOpenId(sessionInfo.getOpenId());
-                        JSONObject userInfo = new JSONObject();
+                        BASE64Decoder base64Decoder = new BASE64Decoder();
+                        JSONObject userInfo = JSON.parseObject(new String(base64Decoder.decodeBuffer(cSessionInfo.getUserInfo()),"utf-8"));
+                        if (null == userInfo){
+                            userInfo = new JSONObject();
+                        }
                         userInfo.put("openId",jsonObject.get("openid"));
                         JSONObject waterMark = new JSONObject();
                         waterMark.put("timestamp",(new Date()).getTime()/1000);

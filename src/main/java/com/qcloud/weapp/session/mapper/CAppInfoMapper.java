@@ -11,13 +11,11 @@ public interface CAppInfoMapper {
 
     int insertSelective(CAppInfo record);
 
-    CAppInfo selectByPrimaryKey(String appid);
-
     /**
      * 查询小程序信息
      * @return
      */
-    List<CAppInfo> selectAll();
+    CAppInfo selectOne();
 
     int updateByPrimaryKeySelective(CAppInfo record);
 
