@@ -94,6 +94,7 @@ public class SessionController {
         } catch (Exception e) {
             result = new Result(ReturnCode.MA_INIT_APPINFO_ERR,e.getMessage());
         } finally {
+            response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(JSON.toJSONString(result));
         }
     }
