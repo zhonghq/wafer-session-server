@@ -223,19 +223,28 @@ public class AuthService {
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
                 param.setSkey(skey);
-                CSessionInfo sessionInfo = cSessionInfoMapper.selectByAuth(param);
-                if (null == sessionInfo || null == sessionInfo.getSessionKey()) {
+                CSessionInfo cSessionInfo = cSessionInfoMapper.selectByAuth(param);
+                if (null == cSessionInfo || null == cSessionInfo.getSessionKey()) {
                     return new Result(ReturnCode.MA_DECRYPT_ERR,"GET_SESSION_KEY_SUCCESS_BUT_DECRYPT_FAIL");
                 }
-                WXBizDataCrypt bizDataCrypt = new WXBizDataCrypt(cAppInfo.getAppid(),sessionInfo.getSessionKey());
-                JSONObject userInfo = bizDataCrypt.decrypt(encryptData,iv);
-                BASE64Encoder base64Encoder = new BASE64Encoder();
-                String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
-                sessionInfo.setUserInfo(userInfoBase64);
-                cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
-                JSONObject dataJsonObject = new JSONObject();
-                dataJsonObject.put("user_info",userInfo);
-                return new Result(ReturnCode.MA_OK,"DECRYPT_SUCCESS",dataJsonObject);
+                Date now = new Date();
+                if (((now.getTime() - cSessionInfo.getCreateTime().getTime())/86400000) > cAppInfo.getLoginDuration()){
+                    //超时
+                    return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
+                }else if ((now.getTime() - cSessionInfo.getLastVisitTime().getTime()) > cAppInfo.getSessionDuration()){
+                    //超时
+                    return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
+                }else {
+                    WXBizDataCrypt bizDataCrypt = new WXBizDataCrypt(cAppInfo.getAppid(),cSessionInfo.getSessionKey());
+                    JSONObject userInfo = bizDataCrypt.decrypt(encryptData,iv);
+                    BASE64Encoder base64Encoder = new BASE64Encoder();
+                    String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
+                    cSessionInfo.setUserInfo(userInfoBase64);
+                    cSessionInfoMapper.updateByPrimaryKeySelective(cSessionInfo);
+                    JSONObject dataJsonObject = new JSONObject();
+                    dataJsonObject.put("user_info",userInfo);
+                    return new Result(ReturnCode.MA_OK,"DECRYPT_SUCCESS",dataJsonObject);
+                }
             }else {
                 return new Result(ReturnCode.MA_NO_APPID,"NO_APPID");
             }
