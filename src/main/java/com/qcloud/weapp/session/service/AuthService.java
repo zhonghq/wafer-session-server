@@ -12,6 +12,7 @@ import com.qcloud.weapp.session.utils.HttpUtil;
 import com.qcloud.weapp.session.utils.ReturnCode;
 import com.qcloud.weapp.session.utils.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sun.misc.BASE64Decoder;
@@ -34,6 +35,9 @@ public class AuthService {
     @Autowired
     CSessionInfoMapper cSessionInfoMapper;
 
+    @Value("${qcloud.appid}")
+    private String appId;
+
     /**
      * 废除getUserInfo直接调用后的
      * @param code
@@ -41,7 +45,7 @@ public class AuthService {
      */
     public Result getIdSkey(String code) {
         try {
-            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            CAppInfo cAppInfo = cAppInfoMapper.selectByPrimaryKey(appId);
             if (null != cAppInfo){
                 String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +cAppInfo.getAppid()+ "&secret=" +cAppInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
                 JSONObject jsonObject = JSONObject.parseObject(HttpUtil.request(url,"POST",null));
@@ -113,7 +117,7 @@ public class AuthService {
      */
     public Result getIdSkey(String code,String encryptData,String iv){
         try {
-            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            CAppInfo cAppInfo = cAppInfoMapper.selectByPrimaryKey(appId);
             if (null != cAppInfo){
                 String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" +cAppInfo.getAppid()+ "&secret=" +cAppInfo.getSecret()+ "&js_code=" +code+ "&grant_type=authorization_code";
                 JSONObject jsonObject = JSONObject.parseObject(HttpUtil.request(url,"POST",null));
@@ -178,7 +182,7 @@ public class AuthService {
      */
     public Result auth(String id, String skey) throws IOException {
         try {
-            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            CAppInfo cAppInfo = cAppInfoMapper.selectByPrimaryKey(appId);
             if (null != cAppInfo){
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
@@ -218,7 +222,7 @@ public class AuthService {
      */
     public Result decrypt(String id, String skey, String iv, String encryptData) {
         try {
-            CAppInfo cAppInfo = cAppInfoMapper.selectOne();
+            CAppInfo cAppInfo = cAppInfoMapper.selectByPrimaryKey(appId);
             if (null != cAppInfo){
                 CSessionInfo param = new CSessionInfo();
                 param.setUuid(id);
