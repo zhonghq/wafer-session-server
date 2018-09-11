@@ -2,6 +2,7 @@ package com.qcloud.weapp.session.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.qcloud.weapp.session.config.SessionInfoUpdateProcesser;
 import com.qcloud.weapp.session.crypto.WXBizDataCrypt;
 import com.qcloud.weapp.session.entity.Result;
 import com.qcloud.weapp.session.mapper.CAppInfoMapper;
@@ -82,7 +83,9 @@ public class AuthService {
                             return new Result(ReturnCode.MA_OK,"NEW_SESSION_SUCCESS",returnMap);
                         }else {
                             sessionInfo.setUuid(cSessionInfo.getUuid());
-                            cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
+                            Thread thread = new Thread(new SessionInfoUpdateProcesser(cSessionInfoMapper,sessionInfo));
+                            thread.start();
+//                            cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
                             JSONObject dataJsonObject = new JSONObject();
                             dataJsonObject.put("id",sessionInfo.getUuid());
                             dataJsonObject.put("skey",sessionInfo.getSkey());
@@ -146,7 +149,9 @@ public class AuthService {
                             return new Result(ReturnCode.MA_OK,"NEW_SESSION_SUCCESS",returnMap);
                         }else {
                             sessionInfo.setUuid(cSessionInfo.getUuid());
-                            cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
+                            Thread thread = new Thread(new SessionInfoUpdateProcesser(cSessionInfoMapper,sessionInfo));
+                            thread.start();
+//                            cSessionInfoMapper.updateByPrimaryKeySelective(sessionInfo);
                             JSONObject dataJsonObject = new JSONObject();
                             dataJsonObject.put("id",sessionInfo.getUuid());
                             dataJsonObject.put("skey",sessionInfo.getSkey());
@@ -198,7 +203,9 @@ public class AuthService {
                     return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
                 }else {
                     cSessionInfo.setLastVisitTime(new Date());
-                    cSessionInfoMapper.updateLastVisitTime(cSessionInfo);
+                    Thread thread = new Thread(new SessionInfoUpdateProcesser(cSessionInfoMapper,cSessionInfo,true));
+                    thread.start();
+//                    cSessionInfoMapper.updateLastVisitTime(cSessionInfo);
                     BASE64Decoder base64Decoder = new BASE64Decoder();
                     String userInfo = new String(base64Decoder.decodeBuffer(cSessionInfo.getUserInfo()),"utf-8");
                     JSONObject dataJsonObject = new JSONObject();
@@ -243,7 +250,9 @@ public class AuthService {
                     BASE64Encoder base64Encoder = new BASE64Encoder();
                     String userInfoBase64 = base64Encoder.encode(userInfo.toJSONString().getBytes("utf-8"));
                     cSessionInfo.setUserInfo(userInfoBase64);
-                    cSessionInfoMapper.updateByPrimaryKeySelective(cSessionInfo);
+                    Thread thread = new Thread(new SessionInfoUpdateProcesser(cSessionInfoMapper,cSessionInfo));
+                    thread.start();
+//                    cSessionInfoMapper.updateByPrimaryKeySelective(cSessionInfo);
                     JSONObject dataJsonObject = new JSONObject();
                     dataJsonObject.put("user_info",userInfo);
                     return new Result(ReturnCode.MA_OK,"DECRYPT_SUCCESS",dataJsonObject);

@@ -2,20 +2,16 @@ package com.qcloud.weapp.session.mapper;
 
 import com.qcloud.weapp.session.model.CSessionInfo;
 import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 
 /**
  * @author zhonghongqiang
  */
-@CacheConfig(cacheNames = "sessionInfo")
 public interface CSessionInfoMapper {
     /**
      * 通过uuid删除Session
      * @param id
      * @return
      */
-    @CachePut(key = "#p0")
     int deleteByPrimaryKey(String id);
 
     /**
@@ -23,7 +19,6 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
-    @CachePut(key = "#p0.uuid")
     int insert(CSessionInfo record);
 
     /**
@@ -31,7 +26,6 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
-    @CachePut(key = "#p0.uuid")
     int insertSelective(CSessionInfo record);
 
     /**
@@ -39,7 +33,6 @@ public interface CSessionInfoMapper {
      * @param id
      * @return
      */
-    @Cacheable(key = "#p0")
     CSessionInfo selectByPrimaryKey(String id);
 
     /**
@@ -54,7 +47,6 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
-    @CachePut(key = "#p0.uuid")
     int updateByPrimaryKeySelective(CSessionInfo record);
 
     /**
@@ -62,7 +54,6 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
-    @CachePut(key = "#p0.uuid")
     int updateLastVisitTime(CSessionInfo record);
 
     /**
@@ -70,6 +61,5 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
-    @CachePut(key = "#p0.uuid")
     int updateByPrimaryKey(CSessionInfo record);
 }
