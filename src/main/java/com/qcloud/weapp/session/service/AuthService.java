@@ -184,10 +184,11 @@ public class AuthService {
         try {
             CAppInfo cAppInfo = cAppInfoMapper.selectByPrimaryKey(appId);
             if (null != cAppInfo){
-                CSessionInfo param = new CSessionInfo();
-                param.setUuid(id);
-                param.setSkey(skey);
-                CSessionInfo cSessionInfo = cSessionInfoMapper.selectByAuth(param);
+                CSessionInfo cSessionInfo = cSessionInfoMapper.selectByPrimaryKey(id);
+                if (null == cSessionInfo || !skey.equals(cSessionInfo.getSkey())){
+                    //鉴权失败
+                    return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
+                }
                 Date now = new Date();
                 if (((now.getTime() - cSessionInfo.getCreateTime().getTime())/86400000) > cAppInfo.getLoginDuration()){
                     //超时
@@ -224,12 +225,10 @@ public class AuthService {
         try {
             CAppInfo cAppInfo = cAppInfoMapper.selectByPrimaryKey(appId);
             if (null != cAppInfo){
-                CSessionInfo param = new CSessionInfo();
-                param.setUuid(id);
-                param.setSkey(skey);
-                CSessionInfo cSessionInfo = cSessionInfoMapper.selectByAuth(param);
-                if (null == cSessionInfo || null == cSessionInfo.getSessionKey()) {
-                    return new Result(ReturnCode.MA_DECRYPT_ERR,"GET_SESSION_KEY_SUCCESS_BUT_DECRYPT_FAIL");
+                CSessionInfo cSessionInfo = cSessionInfoMapper.selectByPrimaryKey(id);
+                if (null == cSessionInfo || !skey.equals(cSessionInfo.getSkey())){
+                    //鉴权失败
+                    return new Result(ReturnCode.MA_AUTH_ERR,"AUTH_FAIL");
                 }
                 Date now = new Date();
                 if (((now.getTime() - cSessionInfo.getCreateTime().getTime())/86400000) > cAppInfo.getLoginDuration()){

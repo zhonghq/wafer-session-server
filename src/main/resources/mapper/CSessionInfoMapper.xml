@@ -14,32 +14,19 @@
   <sql id="Base_Column_List">
     id, uuid, skey, create_time, last_visit_time, open_id, session_key, user_info
   </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
     from cSessionInfo
     where uuid = #{uuid,jdbcType=VARCHAR}
   </select>
-  <select id="selectBySKey" parameterType="java.lang.String" resultMap="BaseResultMap">
-  select
-  <include refid="Base_Column_List" />
-  from cSessionInfo
-  where skey = #{skey,jdbcType=VARCHAR}
-</select>
-  <select id="selectByAuth" parameterType="com.qcloud.weapp.session.model.CSessionInfo" resultMap="BaseResultMap">
-  select
-  <include refid="Base_Column_List" />
-  from cSessionInfo
-  where skey = #{skey,jdbcType=VARCHAR}
-    and uuid = #{uuid,jdbcType=VARCHAR}
-</select>
   <select id="selectByOpenId" parameterType="java.lang.String" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from cSessionInfo
     where open_id = #{openId,jdbcType=VARCHAR}
   </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
     delete from cSessionInfo
     where uuid = #{uuid,jdbcType=VARCHAR}
   </delete>

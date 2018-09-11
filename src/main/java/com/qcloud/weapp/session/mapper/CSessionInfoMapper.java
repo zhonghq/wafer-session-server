@@ -1,20 +1,29 @@
 package com.qcloud.weapp.session.mapper;
 
 import com.qcloud.weapp.session.model.CSessionInfo;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 
+/**
+ * @author zhonghongqiang
+ */
+@CacheConfig(cacheNames = "sessionInfo")
 public interface CSessionInfoMapper {
     /**
      * 通过uuid删除Session
      * @param id
      * @return
      */
-    int deleteByPrimaryKey(Integer id);
+    @CachePut(key = "#p0")
+    int deleteByPrimaryKey(String id);
 
     /**
      * 新增Session
      * @param record
      * @return
      */
+    @CachePut(key = "#p0.uuid")
     int insert(CSessionInfo record);
 
     /**
@@ -22,6 +31,7 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
+    @CachePut(key = "#p0.uuid")
     int insertSelective(CSessionInfo record);
 
     /**
@@ -29,22 +39,8 @@ public interface CSessionInfoMapper {
      * @param id
      * @return
      */
-    CSessionInfo selectByPrimaryKey(Integer id);
-
-    /**
-     * 通过uuid和skey查询Session
-     * @param param
-     * @return
-     */
-    CSessionInfo selectByAuth(CSessionInfo param);
-
-
-    /**
-     * 通过skey查询session
-     * @param skey
-     * @return
-     */
-    CSessionInfo selectBySKey(String skey);
+    @Cacheable(key = "#p0")
+    CSessionInfo selectByPrimaryKey(String id);
 
     /**
      * 通过openId查询Session
@@ -58,6 +54,7 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
+    @CachePut(key = "#p0.uuid")
     int updateByPrimaryKeySelective(CSessionInfo record);
 
     /**
@@ -65,6 +62,7 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
+    @CachePut(key = "#p0.uuid")
     int updateLastVisitTime(CSessionInfo record);
 
     /**
@@ -72,5 +70,6 @@ public interface CSessionInfoMapper {
      * @param record
      * @return
      */
+    @CachePut(key = "#p0.uuid")
     int updateByPrimaryKey(CSessionInfo record);
 }
